@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 const Menu = () => {
@@ -7,7 +7,7 @@ const Menu = () => {
     paddingRight: 5
   }
   return (
-    <div>
+    <div className="mb-10">
       <a href='/' style={padding}>anecdotes</a>
       <a href='/create' style={padding}>create new</a>
       <a href='/about' style={padding}>about</a>
@@ -17,7 +17,7 @@ const Menu = () => {
 
 const AnecdoteList = ({ anecdotes }) => (
   <div>
-    <h2>Anecdotes</h2>
+    <h2 className="text-4xl font-bold text-blue-600">Anecdotes</h2>
     <ul>
       {anecdotes.map(anecdote =>
         {
@@ -31,16 +31,16 @@ const AnecdoteList = ({ anecdotes }) => (
 const Anecdote = ({anecdote}) => {
   if (!anecdote) {
     return (
-      <div>
+      <div className="text-red-600">
         Anecdote not found
       </div>
     )
   }
   return (
     <div>
-      <h2>`{anecdote.content} by {anecdote.author}`</h2>
+      <h2>`<span className="italic">{anecdote.content}</span> by <span className="text-sm">{anecdote.author}</span>`</h2>
       <div>has {anecdote.votes} votes</div>
-      <div>for more info see <a href={anecdote.info}>{anecdote.info}</a></div>
+      <div className="skew-y-1">for more info see <a href={anecdote.info}>{anecdote.info}</a></div>
     </div>
   )
 }
@@ -60,7 +60,7 @@ const About = () => (
 )
 
 const Footer = () => (
-  <div>
+  <div className="mt-10">
     Anecdote app for <a href='https://fullstackopen.com/'>Full Stack Open</a>.
 
     See <a href='https://github.com/fullstack-hy2020/routed-anecdotes/blob/master/src/App.js'>https://github.com/fullstack-hy2020/routed-anecdotes/blob/master/src/App.js</a> for the source code.
@@ -75,6 +75,7 @@ const CreateNew = (props) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    console.log('Add new anecdote', content, author, info)
     props.addNew({
       content,
       author,
@@ -85,25 +86,38 @@ const CreateNew = (props) => {
 
   return (
     <div>
-      <h2>create a new anecdote</h2>
+      <h2 className="text-4xl font-bold text-blue-600">Create a new anecdote</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          content
-          <input name='content' value={content} onChange={(e) => setContent(e.target.value)} />
-        </div>
-        <div>
-          author
-          <input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} />
-        </div>
-        <div>
-          url for more info
-          <input name='info' value={info} onChange={(e)=> setInfo(e.target.value)} />
-        </div>
+        <table>
+          <tbody>
+            <tr>
+              <td>content</td>
+              <td><input name='content' value={content} onChange={(e) => setContent(e.target.value)} /></td>
+            </tr>
+            <tr>
+              <td>author</td>
+              <td><input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} /></td>
+            </tr>
+            <tr>
+              <td>url for more info</td>
+              <td><input name='info' value={info} onChange={(e)=> setInfo(e.target.value)} /></td>
+            </tr>
+          </tbody>
+        </table>
         <button>create</button>
       </form>
     </div>
   )
 
+}
+
+const Notification = ({notification}) => {
+  if (!notification) return
+  return (
+    <div className="bg-blue-100 border border-blue-400 text-blue-700 px-8 animate-pulse py-3 rounded absolute top-10 right-10 height-100">
+      <h2>{notification}</h2>
+    </div>
+  )
 }
 
 const App = () => {
@@ -130,12 +144,19 @@ const App = () => {
     return anecdotes.find(a => a.id === Number(id))
   }
 
+  const navigate = useNavigate()
   const match = useMatch('/anecdotes/:id')
   const anecdote = match ? anecdoteById(match.params.id) : null
 
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
+    console.log('addNew() anecdote:', anecdote)
+    setNotification(`a new anecdote ${anecdote.content} created`)
+    setTimeout(() => {
+      setNotification('')
+    }, 5000)
+    navigate('/')
   }
 
   const vote = (id) => {
@@ -154,8 +175,9 @@ const App = () => {
   }
 
   return (
-      <div>
-        <h1>Software anecdotes</h1>
+      <div className="m-12">
+        <Notification notification={notification} />
+        <h1 className="text-5xl font-bold text-blue-300">Software anecdotes</h1>
         <Menu />
 
         <Routes>
@@ -181,4 +203,7 @@ Anecdote.propTypes = {
 }
 CreateNew.propTypes = {
   addNew: PropTypes.func.isRequired
+}
+Notification.propTypes = {
+  notification: PropTypes.string
 }
