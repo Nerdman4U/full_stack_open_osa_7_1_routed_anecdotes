@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { useField } from './hooks'
 
 const Menu = () => {
   const padding = {
@@ -68,18 +69,17 @@ const Footer = () => (
 )
 
 const CreateNew = (props) => {
-  const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
-  const [info, setInfo] = useState('')
-
+  const content = useField('text')
+  const author = useField('text')
+  const info = useField('text')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log('Add new anecdote', content, author, info)
+    console.log('Add new anecdote', content.value, author.value, info.value)
     props.addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0
     })
   }
@@ -92,15 +92,15 @@ const CreateNew = (props) => {
           <tbody>
             <tr>
               <td>content</td>
-              <td><input name='content' value={content} onChange={(e) => setContent(e.target.value)} /></td>
+              <td><input name='content' {...content} /></td>
             </tr>
             <tr>
               <td>author</td>
-              <td><input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} /></td>
+              <td><input name='author' {...author} /></td>
             </tr>
             <tr>
               <td>url for more info</td>
-              <td><input name='info' value={info} onChange={(e)=> setInfo(e.target.value)} /></td>
+              <td><input name='info' {...info} /></td>
             </tr>
           </tbody>
         </table>
@@ -108,7 +108,6 @@ const CreateNew = (props) => {
       </form>
     </div>
   )
-
 }
 
 const Notification = ({notification}) => {
