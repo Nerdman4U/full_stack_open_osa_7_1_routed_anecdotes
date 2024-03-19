@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-
+import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import PropTypes from 'prop-types'
 
 const Menu = () => {
   const padding = {
@@ -19,10 +19,31 @@ const AnecdoteList = ({ anecdotes }) => (
   <div>
     <h2>Anecdotes</h2>
     <ul>
-      {anecdotes.map(anecdote => <li key={anecdote.id} >{anecdote.content}</li>)}
+      {anecdotes.map(anecdote =>
+        {
+          return <li key={anecdote.id} ><Link to={`/anecdotes/${anecdote.id}` }>{anecdote.content}</Link> </li>
+        }
+      )}
     </ul>
   </div>
 )
+
+const Anecdote = ({anecdote}) => {
+  if (!anecdote) {
+    return (
+      <div>
+        Anecdote not found
+      </div>
+    )
+  }
+  return (
+    <div>
+      <h2>`{anecdote.content} by {anecdote.author}`</h2>
+      <div>has {anecdote.votes} votes</div>
+      <div>for more info see <a href={anecdote.info}>{anecdote.info}</a></div>
+    </div>
+  )
+}
 
 const About = () => (
   <div>
@@ -102,18 +123,26 @@ const App = () => {
       id: 2
     }
   ])
-
   const [notification, setNotification] = useState('')
+  const anecdoteById = (id) => {
+    console.log('anecdoteById() id:', id)
+    if (!id) return null
+    return anecdotes.find(a => a.id === Number(id))
+  }
+
+  const match = useMatch('/anecdotes/:id')
+  const anecdote = match ? anecdoteById(match.params.id) : null
 
   const addNew = (anecdote) => {
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
   }
 
-  const anecdoteById = (id) =>
-    anecdotes.find(a => a.id === id)
-
   const vote = (id) => {
+    if (!id) {
+      console.error('Id not found')
+      return
+    }
     const anecdote = anecdoteById(id)
 
     const voted = {
@@ -125,8 +154,6 @@ const App = () => {
   }
 
   return (
-    <Router>
-
       <div>
         <h1>Software anecdotes</h1>
         <Menu />
@@ -135,13 +162,23 @@ const App = () => {
           <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />} />
           <Route path='/create' element={<CreateNew addNew={addNew} />} />
           <Route path='/about' element={<About />} />
+          <Route path='/anecdotes/:id' element={<Anecdote anecdote={anecdote} />} />
         </Routes>
 
         <Footer />
       </div>
 
-    </Router>
   )
 }
 
 export default App
+
+AnecdoteList.propTypes = {
+  anecdotes: PropTypes.array.isRequired
+}
+Anecdote.propTypes = {
+  anecdote: PropTypes.object
+}
+CreateNew.propTypes = {
+  addNew: PropTypes.func.isRequired
+}
