@@ -19,5 +19,7 @@ button {
   @apply bg-blue-600;
   @apply text-white;
   @apply rounded-md;
-  @apply px-4;
+  @apply px-2;
+  @apply py-1;
+  @apply drop-shadow
 }

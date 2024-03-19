@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { useField } from './hooks'
+import CreateNew from './components/createForm'
 
 const Menu = () => {
   const padding = {
@@ -68,48 +68,6 @@ const Footer = () => (
   </div>
 )
 
-const CreateNew = (props) => {
-  const content = useField('text')
-  const author = useField('text')
-  const info = useField('text')
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Add new anecdote', content.value, author.value, info.value)
-    props.addNew({
-      content: content.value,
-      author: author.value,
-      info: info.value,
-      votes: 0
-    })
-  }
-
-  return (
-    <div>
-      <h2 className="text-4xl font-bold text-blue-600">Create a new anecdote</h2>
-      <form onSubmit={handleSubmit}>
-        <table>
-          <tbody>
-            <tr>
-              <td>content</td>
-              <td><input name='content' {...content} /></td>
-            </tr>
-            <tr>
-              <td>author</td>
-              <td><input name='author' {...author} /></td>
-            </tr>
-            <tr>
-              <td>url for more info</td>
-              <td><input name='info' {...info} /></td>
-            </tr>
-          </tbody>
-        </table>
-        <button>create</button>
-      </form>
-    </div>
-  )
-}
-
 const Notification = ({notification}) => {
   if (!notification) return
   return (
@@ -148,6 +106,22 @@ const App = () => {
   const anecdote = match ? anecdoteById(match.params.id) : null
 
   const addNew = (anecdote) => {
+    if (!anecdote) {
+      console.error('Anecdote not found')
+      setNotification('Anecdote not found')
+      return
+    }
+    if (!anecdote.content) {
+      console.error('Anecdote content cannot be empty')
+      setNotification('Anecdote content cannot be empty')
+      return
+    }
+    if (!anecdote.author) {
+      console.error('Anecdote author cannot be empty')
+      setNotification('Anecdote author cannot be empty')
+      return
+    }
+
     anecdote.id = Math.round(Math.random() * 10000)
     setAnecdotes(anecdotes.concat(anecdote))
     console.log('addNew() anecdote:', anecdote)
@@ -174,21 +148,18 @@ const App = () => {
   }
 
   return (
-      <div className="m-12">
-        <Notification notification={notification} />
-        <h1 className="text-5xl font-bold text-blue-300">Software anecdotes</h1>
-        <Menu />
-
-        <Routes>
-          <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />} />
-          <Route path='/create' element={<CreateNew addNew={addNew} />} />
-          <Route path='/about' element={<About />} />
-          <Route path='/anecdotes/:id' element={<Anecdote anecdote={anecdote} />} />
-        </Routes>
-
-        <Footer />
-      </div>
-
+    <div className="m-12">
+      <Notification notification={notification} />
+      <h1 className="text-5xl font-bold text-blue-300">Software anecdotes</h1>
+      <Menu />
+      <Routes>
+        <Route path='/' element={<AnecdoteList anecdotes={anecdotes} />} />
+        <Route path='/create' element={<CreateNew addNew={addNew} />} />
+        <Route path='/about' element={<About />} />
+        <Route path='/anecdotes/:id' element={<Anecdote anecdote={anecdote} />} />
+      </Routes>
+      <Footer />
+    </div>
   )
 }
 
